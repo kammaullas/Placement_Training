@@ -1,0 +1,139 @@
+Hello Xeno team, I'm Ullas.
+
+As part of this assignment, I was asked to build an AI-native CRM and make a bet on what AI-native really means.
+
+My belief is that a modern CRM should not just be a database. It should be an action engine.
+
+So I built a system where a marketer simply states their intent in natural language, and the AI handles the complex segmentation, message drafting, and campaign dispatching in the background.
+
+Let me show you how it works.
+
+Initially, the marketer lands on the dashboard.
+
+Here they can view customers, previously created segments, and campaign details.
+
+The marketer can then open the AI chat panel and describe their campaign goal.
+
+For example:
+
+"Find at-risk customers from Bangalore who haven't ordered in 60 days."
+
+As soon as the marketer hits Enter, the request is sent to the Groq API.
+
+If you look at the terminal, you can see the request being processed.
+
+The Groq model converts the natural language prompt into a structured JSON format.
+
+After that, the backend processes the JSON and generates a customer segment based on the criteria provided.
+
+The AI then generates three campaign message options.
+
+The marketer can select any one of the options and launch the campaign.
+
+As soon as the campaign is launched, the backend posts the customer data to the Channel Service.
+
+The Channel Service simulates message delivery using predefined probabilities such as delivery rate, click rate, and conversion rate.
+
+Meanwhile, the marketer can monitor the live status of the campaign.
+
+In this example, 30 messages were sent, 28 were delivered, 17 were opened, and 2 resulted in conversions.
+
+Let's try another example.
+
+Here you can see the campaign metrics updating in real time.
+
+In this case, no customers were converted.
+
+Architecture
+
+Now let me walk you through the architecture using the lifecycle of a single campaign message, from the marketer's intent to the conversion statistics appearing on the screen.
+
+The process starts when a marketer at Roast & Co. opens the AI chat panel and types a goal in plain English, such as:
+
+"Find at-risk customers from Bangalore who haven't ordered in 60 days."
+
+The React frontend sends this natural language prompt to the CRM backend.
+
+The backend forwards the request to the Groq API using a strict system prompt that forces the model to return only a JSON rules object.
+
+No explanations. No markdown. Only structured data.
+
+Groq returns a JSON response containing rules such as:
+
+field: lastOrderDate
+operator: less than
+value: 60 days ago
+
+This JSON is then passed to the Segment Engine.
+
+The Segment Engine translates each rule into a MongoDB aggregation pipeline and executes it against the customer collection.
+
+MongoDB returns the matching audience.
+
+After segmentation, the marketer selects one of the AI-generated message options and launches the campaign.
+
+The backend creates communication log entries for every matched customer and sends the batch to the Channel Service.
+
+The campaign endpoint immediately returns a 202 Accepted response.
+
+This ensures that the frontend never freezes while campaign dispatch is happening.
+
+The Channel Service runs as a completely separate Express application with its own deployment and process.
+
+It simulates message delivery using weighted probabilities and timeouts.
+
+For example:
+
+90% delivered
+60% opened
+40% clicked
+30% converted
+
+Whenever a message changes state, the Channel Service sends a webhook callback to the CRM.
+
+Examples include:
+
+delivered
+opened
+clicked
+converted
+
+Each event is sent as an independent webhook.
+
+The receipts.js handler processes these callbacks with two guarantees.
+
+First, idempotency.
+
+Before updating a status, it checks whether that status has already been processed.
+
+This prevents duplicate webhook retries from affecting campaign statistics.
+
+Second, atomic increments.
+
+MongoDB's $inc operator is used so that updates occur as a single server-side operation.
+
+This avoids race conditions even if multiple webhooks arrive simultaneously.
+
+Meanwhile, the marketer remains on the Campaign Details page.
+
+The frontend polls campaign statistics every five seconds.
+
+As webhook events arrive and MongoDB updates the campaign metrics, the dashboard reflects the latest values in real time.
+
+This includes:
+
+Sent
+Delivered
+Opened
+Clicked
+Conversions
+Health Score
+
+The key trade-offs I made were:
+
+Asynchronous dispatch instead of synchronous sending
+Idempotent webhook handling
+Status-history deduplication
+An isolated Channel Service that mirrors real-world messaging provider architecture
+
+If this system were scaled further, I would introduce BullMQ for dispatch queues and Redis for webhook buffering.
