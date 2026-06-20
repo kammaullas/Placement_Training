@@ -9,11 +9,9 @@ require("cors");
 const connectDB =
 require("./config/db");
 
-const courseRoutes =
-require("./routes/courseRoutes");
-
-const contactRoutes =
-require("./routes/contactRoutes");
+const courseRoutes = require("./routes/courseRoutes");
+const contactRoutes = require("./routes/contactRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 // DATABASE CONNECTION
@@ -27,14 +25,9 @@ app.get("/", (req, res) => {
   );
 
 });
-app.use(
-  "/api/courses",
-  courseRoutes
-);
-app.use(
-  "/api/contact",
-  contactRoutes
-);
+app.use("/api/courses", courseRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/auth", authRoutes);
 
 const PORT =
 process.env.PORT || 5000;

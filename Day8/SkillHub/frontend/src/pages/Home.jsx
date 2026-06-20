@@ -23,30 +23,23 @@ function Home() {
   }, []);
 
   async function fetchCourses() {
-
     try {
-
-      const response =
-        await API.get("/courses");
-
+      const response = await API.get("/courses/all");
       setCourses(response.data);
-
-    }
-
-    catch (err) {
-
-      setError(
-        "Unable to Load Courses"
-      );
-
-    }
-
-    finally {
-
+    } catch (err) {
+      setError("Unable to Load Courses");
+    } finally {
       setLoading(false);
-
     }
+  }
 
+  async function deleteCourse(id) {
+    try {
+      await API.delete(`/courses/${id}`);
+      setCourses(courses.filter((course) => course._id !== id));
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   if (loading)
@@ -87,8 +80,10 @@ function Home() {
 
               <CourseCard
                 key={course._id}
+                id={course._id}
                 title={course.title}
                 students={course.students}
+                onDelete={deleteCourse}
               />
 
             ))

@@ -3,6 +3,7 @@ import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 
 import { ThemeContext } from "./ThemeContext";
+import { AuthContext } from "./AuthContext";
 
 import { FaMoon, FaSun } from "react-icons/fa";
 
@@ -10,8 +11,8 @@ function Navbar() {
 
   const [open, setOpen] = useState(false);
 
-  const { dark, setDark } =
-    useContext(ThemeContext);
+  const { dark, setDark } = useContext(ThemeContext);
+  const { user, logout } = useContext(AuthContext);
 
   return (
     <nav>
@@ -26,39 +27,40 @@ function Navbar() {
           </Link>
         </li>
 
-        <li
-          onClick={() => setOpen(!open)}
-          className="menu-item"
-        >
-
-          Courses ▼
-
-          {
-            open && (
-
+        {user && (
+          <li
+            onClick={() => setOpen(!open)}
+            className="menu-item"
+          >
+            Courses ▼
+            {open && (
               <div className="dropdown">
-
-                <Link to="/courses">
-                  All Courses
-                </Link>
-
-                <Link to="/add-course">
-                  Add Course
-                </Link>
-
+                <Link to="/courses">My Courses</Link>
+                <Link to="/add-course">Add Course</Link>
               </div>
-
-            )
-          }
-
-        </li>
+            )}
+          </li>
+        )}
 
         <li>
-          <Link to="/contact">
-            Contact
-          </Link>
+          <Link to="/contact">Contact</Link>
         </li>
 
+        {user ? (
+          <li>
+            <span style={{ marginRight: "10px", color: "gray" }}>Hello, {user.name}</span>
+            <button onClick={logout} style={{ background: "transparent", border: "none", color: "inherit", cursor: "pointer", fontSize: "16px" }}>Logout</button>
+          </li>
+        ) : (
+          <>
+            <li>
+              <Link to="/login">Login</Link>
+            </li>
+            <li>
+              <Link to="/register">Register</Link>
+            </li>
+          </>
+        )}
       </ul>
 
       <button

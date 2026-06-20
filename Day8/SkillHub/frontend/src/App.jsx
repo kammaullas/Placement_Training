@@ -8,16 +8,20 @@ import Home from "./pages/Home";
 import Courses from "./pages/Courses";
 import Contact from "./pages/Contact";
 import AddCourse from "./pages/AddCourse";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 import { ThemeProvider } from "./components/ThemeContext";
+import { AuthProvider } from "./components/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
-    <ThemeProvider>
-
-      <BrowserRouter>
+    <AuthProvider>
+      <ThemeProvider>
+        <BrowserRouter>
 
         <Navbar />
 
@@ -36,7 +40,11 @@ function App() {
 
               <Route
                 path="/courses"
-                element={<Courses />}
+                element={
+                  <ProtectedRoute>
+                    <Courses />
+                  </ProtectedRoute>
+                }
               />
 
               <Route
@@ -46,8 +54,15 @@ function App() {
 
               <Route
                 path="/add-course"
-                element={<AddCourse />}
+                element={
+                  <ProtectedRoute>
+                    <AddCourse />
+                  </ProtectedRoute>
+                }
               />
+
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
             </Routes>
 
@@ -62,9 +77,9 @@ function App() {
           autoClose={3000}
         />
 
-      </BrowserRouter>
-
-    </ThemeProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 export default App;

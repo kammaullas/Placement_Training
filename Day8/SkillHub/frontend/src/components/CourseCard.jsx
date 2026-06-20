@@ -1,8 +1,10 @@
 import { FaUsers } from "react-icons/fa";
 
 function CourseCard({
+  id,
   title,
-  students
+  students,
+  onDelete
 }) {
 
   return (
@@ -25,9 +27,19 @@ function CourseCard({
 
       </p>
 
-      <button>
-        View Course
-      </button>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+        <button>
+          View Course
+        </button>
+        {onDelete && (
+          <button 
+            onClick={() => onDelete(id)}
+            style={{ backgroundColor: "#ff4d4f", color: "white" }}
+          >
+            Delete
+          </button>
+        )}
+      </div>
 
     </div>
   );
